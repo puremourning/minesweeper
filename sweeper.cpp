@@ -24,6 +24,12 @@ namespace
     } state;
   };
 
+  enum class CoordinateSystem
+  {
+    Cartesian,
+    Boris
+  };
+
   struct Board
   {
     int width{20};
@@ -34,6 +40,7 @@ namespace
     std::default_random_engine::result_type seed{std::random_device{}()};
     bool game_over{false};
     uint64_t time{0};
+    CoordinateSystem system{CoordinateSystem::Boris};
   };
 
   void print_board(Board& board, bool reveal = false)
@@ -131,7 +138,15 @@ namespace
       }
       std::string cmd, x, y;
       std::istringstream iss(line);
-      iss >> cmd >> x >> y;
+      switch (board.system)
+      {
+        case CoordinateSystem::Cartesian:
+          iss >> cmd >> x >> y;
+          break;
+        case CoordinateSystem::Boris:
+          iss >> cmd >> y >> x;
+          break;
+      }
       if (cmd == "r")
       {
         return {Reveal, std::atoi(x.c_str()), std::atoi(y.c_str())};
@@ -158,12 +173,18 @@ namespace
       }
       else if (int ix = std::atoi(cmd.c_str()); ix >= 0 && ix < board.width)
       {
-        return {Reveal, ix, std::atoi(x.c_str())};
+        switch (board.system)
+        {
+          case CoordinateSystem::Cartesian:
+            return {Reveal, ix, std::atoi(x.c_str())};
+          case CoordinateSystem::Boris:
+            return {Reveal, std::atoi(y.c_str()), ix};
+        }
       }
       else
       {
         std::cout << "Unknown command. Commands: "
-                  << "r x y (reveal), f x y (flag), q (quit)"
+                  << "r x y (reveal), f x y (flag), q (quit), n [x y] (new)"
                   << std::endl;
       }
     }
@@ -331,6 +352,10 @@ int main(int argc, char** argv)
     {
       std::istringstream iss(arg.substr(7));
       iss >> std::hex >> board.seed;
+    }
+    else if (arg == "--cartesian")
+    {
+      board.system = CoordinateSystem::Cartesian;
     }
   }
   board.cells.resize(board.width * board.height);
