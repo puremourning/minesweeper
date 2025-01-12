@@ -1,0 +1,2 @@
+#!/bin/bash
+exec g++ -o sweeper $(cat compile_flags.txt| tr '\n' ' ' )  sweeper.cpp

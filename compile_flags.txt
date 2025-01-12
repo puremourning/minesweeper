@@ -1,0 +1,6 @@
+-xc++
+-std=c++23
+-Wall
+-Wextra
+-fsanitize=address
+-fno-sanitize-recover=all
